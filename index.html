@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <style>
+    /* Estilos aprimorados para tabela e formulário */
+
+    /* Estilo para o fundo */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-image: url(https://wallpapers.com/images/featured/fundo-rosa-brilhante-tmfd0avg3gv960lb.jpg); /* Substitua por qualquer URL de imagem que desejar */
+      background-size: cover;
+      background-position: center;
+      color: #333;
+    }
+
+    /* Estilo para o cabeçalho */
+    h1 {
+      text-align: center;
+      background-color: rgba(55, 3, 39, 0.8);
+      padding: 15px;
+      color: rgb(242, 240, 242);
+      border-radius: 10px;
+      font-size: 24px;
+      margin: 20px;
+    }
+
+    /* Estilo para o formulário */
+    form {
+      background-color: rgba(246, 235, 243, 0.9);
+      border: 2px solid rgb(238, 12, 163);
+      padding: 15px;
+      margin: 20px auto;
+      border-radius: 8px;
+      max-width: 300px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Estilo para a tabela */
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background-color: rgba(250, 251, 250, 0.9);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      color: rgb(167, 15, 132);
+    }
+
+    /* Cabeçalho da tabela */
+    thead th {
+      background-color: rgba(237, 9, 176, 0.9);
+      color: rgb(85, 6, 48);
+      padding: 12px;
+      font-size: 18px;
+      text-align: left;
+    }
+
+    /* Estilo para as linhas */
+    tbody tr:nth-child(odd) {
+      background-color: rgba(245, 245, 245, 0.9);
+    }
+    tbody tr:nth-child(even) {
+      background-color: rgba(230, 230, 250, 0.9);
+    }
+
+    /* Células da tabela */
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+
+    /* Botões de ação */
+    button {
+      padding: 6px 10px;
+      margin: 2px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      background-color: rgba(168, 135, 155, 0.9);
+      color: white;
+    }
+    button[type="submit"] {
+      background-color: rgba(104, 2, 63, 0.9);
+      color: white;
+    }
+    .edit-btn {
+      background-color: rgb(119, 8, 68);
+      color: rgb(240, 233, 233);
+    }
+    .delete-btn {
+      background-color: rgb(119, 8, 68);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lista de Cachorros e Donos</h1>
+  <button onclick="exibirFormulario()">Adicionar um cachorro</button><br><br />
+
+  <form id="formulario" onsubmit="salvarCachorro(event)" style="display: none;">
+    <label>Cachorro</label>
+    <input id="dogName" name="cachorro" type="text" required />
+    <br />
+    <label>Dono</label>
+    <input id="ownerName" name="dono" type="text" required />
+    <br />
+    <label>Telefone</label>
+    <input id="phone" name="telefone" type="tel" required />
+    <br />
+    <label>Email</label>
+    <input id="email" name="email" type="email" required />
+    <br />
+    <label>Imagem(Adicione um número)</label>
+    <input id="photo" name="imagem" type="text" required />
+    <br />
+    <button type="submit">Salvar</button>
+  </form>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Imagem</th>
+        <th>Cachorro</th>
+        <th>Dono</th>
+        <th>Telefone</th>
+        <th>Email</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="dogsTableBody"></tbody>
+  </table>
+
+  <script>
+    let dogs = JSON.parse(localStorage.getItem("dogs")) || [];
+    let editingDogId = null;
+
+    function exibirFormulario() {
+      document.getElementById("formulario").style.display = "block";
+    }
+
+    function ocultarFormulario() {
+      document.getElementById("formulario").style.display = "none";
+      document.getElementById("formulario").reset();
+      editingDogId = null;
+    }
+
+    function renderDogs() {
+      const tableBody = document.getElementById("dogsTableBody");
+      tableBody.innerHTML = "";
+
+      dogs.forEach((dog) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><img src="https://placedog.net/100/100?random=${dog.photo}" alt="Dog Photo" width="50"></td>
+          <td>${dog.name}</td>
+          <td>${dog.owner}</td>
+          <td>${dog.phone}</td>
+          <td>${dog.email}</td>
+          <td>
+            <button class="edit-btn" onclick="editDog(${dog.id})">Editar</button>
+            <button class="delete-btn" onclick="deleteDog(${dog.id})">Excluir</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function salvarCachorro(event) {
+      event.preventDefault();
+      const name = document.getElementById("dogName").value;
+      const owner = document.getElementById("ownerName").value;
+      const phone = document.getElementById("phone").value;
+      const email = document.getElementById("email").value;
+      const photo = document.getElementById("photo").value;
+
+      if (editingDogId) {
+        const dog = dogs.find(d => d.id === editingDogId);
+        dog.name = name;
+        dog.owner = owner;
+        dog.phone = phone;
+        dog.email = email;
+        dog.photo = photo;
+      } else {
+        const newDog = { id: Date.now(), name, owner, phone, email, photo };
+        dogs.push(newDog);
+      }
+
+      localStorage.setItem("dogs", JSON.stringify(dogs));
+      renderDogs();
+      ocultarFormulario();
+    }
+
+    function editDog(id) {
+      const dog = dogs.find(d => d.id === id);
+      document.getElementById("dogName").value = dog.name;
+      document.getElementById("ownerName").value = dog.owner;
+      document.getElementById("phone").value = dog.phone;
+      document.getElementById("email").value = dog.email;
+      document.getElementById("photo").value = dog.photo;
+      editingDogId = id;
+      exibirFormulario();
+    }
+
+    function deleteDog(id) {
+      dogs = dogs.filter(dog => dog.id !== id);
+      localStorage.setItem("dogs", JSON.stringify(dogs));
+      renderDogs();
+    }
+
+    renderDogs();
+  </script>
+</body>
+</html>
